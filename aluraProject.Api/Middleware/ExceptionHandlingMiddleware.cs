@@ -1,5 +1,6 @@
-﻿using System.Text.Json;
-using aluraProject.Application.Common.Exceptions;
+﻿using aluraProject.Application.Common.Exceptions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace aluraProject.Api.Middleware;
 
@@ -35,15 +36,17 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
         }
 
         context.Response.StatusCode = status;
-        context.Response.ContentType = "application/json";
 
-        var response = new
+        var problem = new ProblemDetails
         {
-            status,
-            message,
-            traceId = context.TraceIdentifier
+            Status = status,
+            Title = ReasonPhrases.GetReasonPhrase(status),
+            Detail = message,
+            Instance = context.Request.Path
         };
+        problem.Extensions["traceId"] = context.TraceIdentifier;
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await context.Response.WriteAsJsonAsync(problem);
     }
 }
+

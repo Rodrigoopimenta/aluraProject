@@ -28,7 +28,9 @@ public sealed class CourseService(ICourseRepository courseRepository, IUnitOfWor
     {
         var page = query.Page <= 0 ? 1 : query.Page;
         var pageSize = query.PageSize <= 0 ? 10 : Math.Min(query.PageSize, 100);
-        var data = await courseRepository.ListAsync(page, pageSize, query.Title, query.Category, cancellationToken);
+        var sortBy = string.IsNullOrWhiteSpace(query.SortBy) ? "createdAt" : query.SortBy.Trim();
+        var sortOrder = string.IsNullOrWhiteSpace(query.SortOrder) ? "desc" : query.SortOrder.Trim();
+        var data = await courseRepository.ListAsync(page, pageSize, query.Search, query.Category, sortBy, sortOrder, cancellationToken);
         return new PagedResult<CourseResponse>(data.Items.Select(Map).ToList(), data.Page, data.PageSize, data.TotalItems);
     }
 

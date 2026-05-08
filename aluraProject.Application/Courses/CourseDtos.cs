@@ -12,4 +12,10 @@ public sealed record CourseResponse(
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc);
 
-public sealed record CourseQuery(int Page = 1, int PageSize = 10, string? Title = null, string? Category = null);
+public sealed record CourseQuery(
+    int Page = 1,
+    int PageSize = 10,
+    string? Search = null,
+    string? Category = null,
+    string SortBy = "createdAt",
+    string SortOrder = "desc");

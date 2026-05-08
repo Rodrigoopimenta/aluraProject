@@ -10,17 +10,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace aluraProject.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("courses")]
+[Route("api/courses")]
 public sealed class CoursesController(ICourseService courseService) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType<PagedResult<CourseResponse>>(StatusCodes.Status200OK)]
     public Task<PagedResult<CourseResponse>> List([FromQuery] CourseQuery query, CancellationToken cancellationToken) =>
         courseService.ListAsync(query, cancellationToken);
 
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
+    [ResponseCache(Duration = 120, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType<CourseResponse>(StatusCodes.Status200OK)]
     public Task<CourseResponse> GetById(Guid id, CancellationToken cancellationToken) =>
         courseService.GetByIdAsync(id, cancellationToken);
