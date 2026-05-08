@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+﻿using aluraProject.Application.Abstractions;
 using aluraProject.Application.Abstractions.Services;
 using aluraProject.Application.Common;
 using aluraProject.Application.Common.Exceptions;
@@ -10,9 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace aluraProject.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("students")]
+[Route("api/students")]
 [Authorize]
-public sealed class StudentsController(IStudentService studentService) : ControllerBase
+public sealed class StudentsController(
+    IStudentService studentService,
+    ICurrentUserService currentUserService) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = RoleNames.Admin)]
@@ -28,6 +31,15 @@ public sealed class StudentsController(IStudentService studentService) : Control
     [ProducesResponseType<PagedResult<StudentResponse>>(StatusCodes.Status200OK)]
     public Task<PagedResult<StudentResponse>> List([FromQuery] StudentQuery query, CancellationToken cancellationToken) =>
         studentService.ListAsync(query, cancellationToken);
+
+    [HttpGet("me")]
+    [HttpGet("/me")]
+    [ProducesResponseType<StudentResponse>(StatusCodes.Status200OK)]
+    public Task<StudentResponse> GetMe(CancellationToken cancellationToken)
+    {
+        var userId = EnsureAuthenticatedUserId();
+        return studentService.GetByUserIdAsync(userId, cancellationToken);
+    }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType<StudentResponse>(StatusCodes.Status200OK)]
@@ -47,15 +59,6 @@ public sealed class StudentsController(IStudentService studentService) : Control
         return await studentService.UpdateAsync(id, request, cancellationToken);
     }
 
-    [HttpPatch("{id:guid}/deactivate")]
-    [Authorize(Roles = RoleNames.Admin)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
-    {
-        await studentService.DeactivateAsync(id, cancellationToken);
-        return NoContent();
-    }
-
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = RoleNames.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -67,15 +70,18 @@ public sealed class StudentsController(IStudentService studentService) : Control
 
     private void EnforceAdminOrOwner(string resourceUserId)
     {
-        if (User.IsInRole(RoleNames.Admin))
+        if (currentUserService.IsInRole(RoleNames.Admin))
         {
             return;
         }
 
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        var currentUserId = EnsureAuthenticatedUserId();
         if (!string.Equals(currentUserId, resourceUserId, StringComparison.Ordinal))
         {
             throw new ForbiddenException("You can only access your own student profile.");
         }
     }
+
+    private string EnsureAuthenticatedUserId() =>
+        currentUserService.UserId ?? throw new UnauthorizedException("Authenticated user id not found.");
 }

@@ -1,4 +1,5 @@
-﻿using aluraProject.Application.Abstractions.Repositories;
+﻿using aluraProject.Application.Abstractions;
+using aluraProject.Application.Abstractions.Repositories;
 using aluraProject.Application.Abstractions.Services;
 using aluraProject.Application.Common;
 using aluraProject.Application.Common.Exceptions;
@@ -7,10 +8,24 @@ using aluraProject.Domain.Entities;
 
 namespace aluraProject.Application.Services;
 
-public sealed class StudentService(IStudentRepository studentRepository, IUnitOfWork unitOfWork) : IStudentService
+public sealed class StudentService(
+    IStudentRepository studentRepository,
+    IIdentityService identityService,
+    IUnitOfWork unitOfWork) : IStudentService
 {
     public async Task<StudentResponse> CreateAsync(CreateStudentRequest request, CancellationToken cancellationToken)
     {
+        if (!await identityService.UserExistsAsync(request.UserId, cancellationToken))
+        {
+            throw new ValidationException("Provided UserId does not exist in Identity.");
+        }
+
+        var existingUser = await studentRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+        if (existingUser is not null)
+        {
+            throw new ConflictException("There is already a student profile for this UserId.");
+        }
+
         var existingEmail = await studentRepository.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), cancellationToken);
         if (existingEmail is not null)
         {
@@ -48,6 +63,17 @@ public sealed class StudentService(IStudentRepository studentRepository, IUnitOf
         if (student is null)
         {
             throw new NotFoundException("Student not found.");
+        }
+
+        return Map(student);
+    }
+
+    public async Task<StudentResponse> GetByUserIdAsync(string userId, CancellationToken cancellationToken)
+    {
+        var student = await studentRepository.GetByUserIdAsync(userId, cancellationToken);
+        if (student is null)
+        {
+            throw new NotFoundException("Student not found for current user.");
         }
 
         return Map(student);

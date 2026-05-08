@@ -68,4 +68,7 @@ public sealed class IdentityService(
         var roles = await userManager.GetRolesAsync(user);
         return (true, user.Id, user.Email, roles.ToList());
     }
+
+    public Task<bool> UserExistsAsync(string userId, CancellationToken cancellationToken) =>
+        userManager.Users.AnyAsync(x => x.Id == userId, cancellationToken);
 }

@@ -101,3 +101,16 @@ dotnet ef database update --project aluraProject.Infrastructure --startup-projec
 ## Modelagem
 - Veja [docs/data-model.md](docs/data-model.md) para entidades, relacionamentos, indices e regras.
 
+
+## Rotas de estudantes
+- `POST /students` (Admin): cria perfil vinculado a `UserId` existente no Identity.
+- `GET /students` (Admin): lista estudantes com paginação.
+- `GET /students/{id}` (Admin ou o próprio estudante): detalhes.
+- `PUT /students/{id}` (Admin ou o próprio estudante): atualização de perfil.
+- `DELETE /students/{id}` (Admin): remoção lógica (soft delete).
+- `GET /me` ou `GET /students/me` (autenticado): retorna o perfil do usuário do token.
+
+Regras:
+- `Email` único (conflito retorna HTTP 409).
+- Não-admin não acessa dados de outros estudantes.
+- A validação de propriedade compara `UserId` do recurso com `sub`/`nameidentifier` do token.
