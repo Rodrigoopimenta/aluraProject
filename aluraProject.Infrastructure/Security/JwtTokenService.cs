@@ -20,7 +20,13 @@ public sealed class JwtTokenService(IConfiguration configuration) : IJwtTokenSer
             throw new InvalidOperationException("Jwt:Key is missing or too short. Configure a secure key via environment variables or user-secrets.");
         }
 
-        var expiresAt = DateTime.UtcNow.AddHours(2);
+        var accessTokenMinutes = configuration.GetValue<int?>("Jwt:AccessTokenMinutes") ?? 120;
+        if (accessTokenMinutes <= 0)
+        {
+            accessTokenMinutes = 120;
+        }
+
+        var expiresAt = DateTime.UtcNow.AddMinutes(accessTokenMinutes);
 
         var claims = new List<Claim>
         {
