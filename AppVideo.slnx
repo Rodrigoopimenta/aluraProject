@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="AppVideo.Application/AppVideo.Application.csproj" />
-  <Project Path="AppVideo.Domain/AppVideo.Domain.csproj" />
-  <Project Path="AppVideo.Infrastructure/AppVideo.Infrastructure.csproj" />
-  <Project Path="AppVideo/AppVideo.csproj" />
-</Solution>
