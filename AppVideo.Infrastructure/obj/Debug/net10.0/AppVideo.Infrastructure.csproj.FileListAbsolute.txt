@@ -1,0 +1,17 @@
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Infrastructure.deps.json
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Infrastructure.dll
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Infrastructure.pdb
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Application.dll
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Domain.dll
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Application.pdb
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\bin\Debug\net10.0\AppVideo.Domain.pdb
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.AssemblyInfo.cs
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.1EEE9E29.Up2Date
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.dll
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\refint\AppVideo.Infrastructure.dll
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\AppVideo.Infrastructure.pdb
+C:\Users\rodri\OneDrive\Documentos\New project\AppVideo.Infrastructure\obj\Debug\net10.0\ref\AppVideo.Infrastructure.dll

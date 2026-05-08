@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AppVideo.Pages.SportSelectionPage"
+             Title="Select Sport">
+
+    <VerticalStackLayout Padding="24" Spacing="14">
+        <Label Text="Select a sport"
+               Style="{StaticResource Headline}" />
+
+        <Label Text="Choose one option below"
+               Style="{StaticResource SubHeadline}" />
+
+        <Button Text="Basketball"
+                Clicked="OnBasketballClicked" />
+
+        <Button Text="Volleyball"
+                Clicked="OnVolleyballClicked" />
+
+        <Button Text="Football"
+                Clicked="OnFootballClicked" />
+    </VerticalStackLayout>
+
+</ContentPage>

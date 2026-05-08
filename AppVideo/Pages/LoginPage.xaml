@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AppVideo.Pages.LoginPage"
+             Title="Login">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+            <Label Text="Welcome"
+                   Style="{StaticResource Headline}" />
+
+            <Label Text="Enter your account to continue"
+                   Style="{StaticResource SubHeadline}" />
+
+            <Entry x:Name="UsernameEntry"
+                   Placeholder="Username"
+                   ClearButtonVisibility="WhileEditing" />
+
+            <Entry x:Name="PasswordEntry"
+                   Placeholder="Password"
+                   IsPassword="True"
+                   ClearButtonVisibility="WhileEditing" />
+
+            <Label x:Name="ErrorLabel"
+                   Text="Please enter username and password."
+                   TextColor="IndianRed"
+                   IsVisible="False" />
+
+            <Button Text="Login"
+                    Clicked="OnLoginClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
