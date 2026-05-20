@@ -1,6 +1,52 @@
-@aluraProject.Api_HostAddress = http://localhost:5153
+@host = https://localhost:7243
+@contentType = application/json
+@token = REPLACE_WITH_JWT
+@studentId = 11111111-1111-1111-1111-111111111111
+@courseId = 22222222-2222-2222-2222-222222222222
 
-GET {{aluraProject.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Auth - Register (public)
+POST {{host}}/api/auth/register
+Content-Type: {{contentType}}
 
-###
+{
+  "email": "student@aluraproject.local",
+  "password": "StrongPass#123",
+  "role": "Student"
+}
+
+### Auth - Login (public)
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "student@aluraproject.local",
+  "password": "StrongPass#123"
+}
+
+### Courses - List (public)
+GET {{host}}/api/courses?page=1&pageSize=10&search=api&category=backend&sortBy=createdAt&sortOrder=desc
+Accept: {{contentType}}
+
+### Enrollments - Create as Student (JWT required, no studentId)
+POST {{host}}/api/enrollments
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "courseId": "{{courseId}}"
+}
+
+### Enrollments - Create as Admin (JWT required, studentId required)
+POST {{host}}/api/enrollments
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "courseId": "{{courseId}}",
+  "studentId": "{{studentId}}"
+}
+
+### Students - List enrollments by student (JWT required, Admin or owner)
+GET {{host}}/api/students/{{studentId}}/enrollments?page=1&pageSize=10&status=Active
+Authorization: Bearer {{token}}
+Accept: {{contentType}}

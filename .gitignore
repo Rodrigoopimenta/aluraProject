@@ -486,3 +486,7 @@ $RECYCLE.BIN/
 .env.*
 !.env.example
 
+
+# Local SQLite database
+aluraProject.Api/*.db
+
