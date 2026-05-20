@@ -1,4 +1,5 @@
-﻿using aluraProject.Application.Abstractions.Repositories;
+using aluraProject.Application.Abstractions.Repositories;
+using aluraProject.Application.Common;
 using aluraProject.Domain.Entities;
 using aluraProject.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +14,30 @@ public sealed class EnrollmentRepository(AppDbContext dbContext) : IEnrollmentRe
     public Task<bool> ExistsAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken) =>
         dbContext.Enrollments.AnyAsync(x => x.StudentId == studentId && x.CourseId == courseId, cancellationToken);
 
-    public async Task<IReadOnlyList<Enrollment>> ListByStudentAsync(Guid studentId, CancellationToken cancellationToken)
+    public async Task<PagedResult<Enrollment>> ListByStudentAsync(
+        Guid studentId,
+        int page,
+        int pageSize,
+        EnrollmentStatus? status,
+        CancellationToken cancellationToken)
     {
-        return await dbContext.Enrollments
+        var query = dbContext.Enrollments
             .AsNoTracking()
             .Include(x => x.Course)
-            .Where(x => x.StudentId == studentId)
-            .OrderByDescending(x => x.EnrolledAtUtc)
-            .ToListAsync(cancellationToken);
-    }
+            .Where(x => x.StudentId == studentId);
 
-    public async Task<IReadOnlyList<Enrollment>> ListAllAsync(CancellationToken cancellationToken)
-    {
-        return await dbContext.Enrollments
-            .AsNoTracking()
-            .Include(x => x.Course)
-            .Include(x => x.Student)
+        if (status is not null)
+        {
+            query = query.Where(x => x.Status == status);
+        }
+
+        var totalItems = await query.CountAsync(cancellationToken);
+        var items = await query
             .OrderByDescending(x => x.EnrolledAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<Enrollment>(items, page, pageSize, totalItems);
     }
 }

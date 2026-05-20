@@ -1,14 +1,37 @@
-﻿using System.Text;
+using System.Reflection;
+using System.Text;
 using aluraProject.Api.Middleware;
+using aluraProject.Api.Swagger;
 using aluraProject.Infrastructure;
 using aluraProject.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var problem = new ValidationProblemDetails(context.ModelState)
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = "One or more validation errors occurred.",
+                Instance = context.HttpContext.Request.Path
+            };
+
+            problem.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+            problem.Extensions["timestampUtc"] = DateTime.UtcNow;
+            problem.Extensions["errorCode"] = "validation_error";
+
+            return new BadRequestObjectResult(problem);
+        };
+    });
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -57,9 +80,19 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "aluraProject API",
-        Version = "v1",
+        Version = "v1.0",
         Description = "DDD Web API with JWT authentication, role-based authorization, courses, students and enrollments."
     });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+    }
+
+    options.OperationFilter<SwaggerExamplesOperationFilter>();
+    options.DocumentFilter<SwaggerTagsDocumentFilter>();
 
     var securityScheme = new OpenApiSecurityScheme
     {
@@ -87,7 +120,7 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

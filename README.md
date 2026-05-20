@@ -1,116 +1,120 @@
-﻿# aluraProject
+# aluraProject
 
-Web API em ASP.NET Core 8 com arquitetura DDD (Domain, Application, Infrastructure e API), autenticacao JWT e controle de acesso por papeis.
+ASP.NET Core 8 Web API com arquitetura DDD (Domain, Application, Infrastructure, API), autenticacao JWT e autorizacao por roles.
 
-## Estrutura (DDD)
-- `aluraProject.Domain`: entidades e regras de negocio
-- `aluraProject.Application`: casos de uso, DTOs, contratos e servicos de aplicacao
-- `aluraProject.Infrastructure`: EF Core, Identity, JWT, repositorios e seed/migrations
-- `aluraProject.Api`: controllers, middleware, Swagger e composicao da aplicacao
+## Estrutura
+- `aluraProject.Domain`: entidades e regras de dominio.
+- `aluraProject.Application`: casos de uso, DTOs, contratos e servicos.
+- `aluraProject.Infrastructure`: EF Core, Identity, JWT, repositorios, migrations e seed.
+- `aluraProject.Api`: controllers, middleware, Swagger e composicao da aplicacao.
 
 ## Requisitos
-- .NET SDK 8.0+
+- .NET SDK 8+
 - Git
 
-## Provedor de banco
-- Desenvolvimento: **SQLite** (`Data Source=aluraProject.db`)
-- Evolucao para ambientes maiores: SQL Server/PostgreSQL (mantendo migrations por provedor)
+## Configuracao
+Defina os valores abaixo em `appsettings.*`, variaveis de ambiente ou User Secrets:
+- `ConnectionStrings__DefaultConnection`
+- `Jwt__Key` (minimo 16 caracteres)
+- `Jwt__Issuer`
+- `Jwt__Audience`
+- `Jwt__AccessTokenMinutes`
 
-## Configuracao de ambiente
-1. Copie `.env.example` para `.env` (ou configure via User Secrets/variaveis do sistema).
-2. Defina obrigatoriamente:
-   - `ConnectionStrings__DefaultConnection`
-   - `Jwt__Key` (minimo 16 caracteres)
-
-### User Secrets (recomendado em dev)
+Exemplo com User Secrets:
 ```bash
 cd aluraProject.Api
 dotnet user-secrets init
-dotnet user-secrets set "Jwt:Key" "sua-chave-forte-com-16-ou-mais"
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Data Source=aluraProject.db"
+dotnet user-secrets set "Jwt:Key" "sua-chave-forte-com-16-ou-mais"
 dotnet user-secrets set "Jwt:Issuer" "aluraProject"
 dotnet user-secrets set "Jwt:Audience" "aluraProject.Client"
 dotnet user-secrets set "Jwt:AccessTokenMinutes" "120"
-dotnet user-secrets set "Seed:Admin:Email" "admin@aluraproject.local"
-dotnet user-secrets set "Seed:Admin:Password" "SenhaForte123"
 ```
 
-## EF Core + Identity + JWT (resumo da configuracao)
-- `AppDbContext` herda de `IdentityDbContext<ApplicationUser, IdentityRole, string>`.
-- DI configurado com:
-  - `AddDbContext<AppDbContext>(UseSqlite(...))`
-  - `AddIdentityCore<ApplicationUser>()`
-  - `AddRoles<IdentityRole>()`
-  - `AddEntityFrameworkStores<AppDbContext>()`
-  - `AddSignInManager()` + `AddDefaultTokenProviders()`
-- Politicas do Identity:
-  - `RequireUniqueEmail = true`
-  - senha forte (min 8, maiuscula, minuscula, numero, simbolo)
-  - lockout: 5 tentativas, 15 minutos
-- JWT Bearer:
-  - emissor: `Jwt:Issuer`
-  - audiencia: `Jwt:Audience`
-  - chave de assinatura: `Jwt:Key`
-  - expiracao do access token: `Jwt:AccessTokenMinutes`
-
-## Como rodar localmente
+## Como rodar o projeto
+Na raiz da solucao:
 ```bash
 dotnet restore
 dotnet build
 dotnet run --project aluraProject.Api --launch-profile https
 ```
 
-Swagger:
-- https://localhost:7243/swagger
+Swagger UI (Development e Staging/homolog):
+- `https://localhost:7243/swagger`
 
-## Migrations e seed
-- A API aplica migrations automaticamente na inicializacao.
-- Seed idempotente:
-  - papeis `Admin`, `Instructor`, `Student`
-  - usuario admin, se `Seed:Admin:Email` e `Seed:Admin:Password` estiverem configurados.
-- Comando manual de migrations (se necessario):
+## Como rodar os testes
 ```bash
-dotnet ef migrations add NomeDaMigration --project aluraProject.Infrastructure --startup-project aluraProject.Api
-dotnet ef database update --project aluraProject.Infrastructure --startup-project aluraProject.Api
+dotnet test
 ```
 
-## Rotas de autenticacao (contrato)
-### `POST /api/auth/register`
-- Objetivo: registrar usuario e vincular papel (`Admin`, `Instructor`, `Student`).
-- Entrada: email, senha, role.
-- Saida: access token JWT + expiracao.
+Observacao: atualmente a solucao nao possui projetos de teste automatizado; o comando executa sem testes.
 
-### `POST /api/auth/login`
-- Objetivo: autenticar usuario existente.
-- Entrada: email, senha.
-- Saida: access token JWT + expiracao.
+## Swagger e autenticacao JWT
+1. Abra `POST /api/auth/login` ou `POST /api/auth/register` no Swagger.
+2. Execute a requisicao e copie o `accessToken` retornado.
+3. Clique em **Authorize** no Swagger UI.
+4. Informe: `Bearer {seu_token}`.
+5. Execute endpoints protegidos.
 
-### `POST /api/auth/refresh-token`
-- Objetivo: trocar um refresh token valido por novo access token (e rotacionar refresh token).
-- Entrada esperada: refresh token (httpOnly cookie ou payload dedicado, conforme politica final).
-- Saida esperada: novo access token + novo refresh token.
-- Status atual: **rota definida no contrato/documentacao; implementacao de refresh token ainda pendente**.
+Security Scheme configurado:
+- Tipo: `HTTP`
+- Scheme: `bearer`
+- Bearer format: `JWT`
 
-## Convencoes de trabalho
-- Branch estavel: `main`
-- Features: `feature/*`
-- Commits: Conventional Commits
-- Template de PR: `.github/PULL_REQUEST_TEMPLATE.md`
-- Backlog: GitHub Issues + Projects + Milestones
+## Organizacao de endpoints (tags)
+- `Auth`
+- `Courses`
+- `Students`
+- `Enrollments`
 
-## Modelagem
-- Veja [docs/data-model.md](docs/data-model.md) para entidades, relacionamentos, indices e regras.
+## Roles por endpoint (resumo)
+- `POST /api/auth/register`: anonimo
+- `POST /api/auth/login`: anonimo
+- `GET /api/courses`: anonimo
+- `GET /api/courses/{id}`: anonimo
+- `POST /api/courses`: `Admin`, `Instructor`
+- `PUT /api/courses/{id}`: `Admin`, `Instructor`
+- `DELETE /api/courses/{id}`: `Admin`
+- `POST /api/students`: `Admin`
+- `GET /api/students`: `Admin`
+- `GET /api/students/me` e `GET /me`: autenticado
+- `GET /api/students/{id}`: `Admin` ou dono do recurso
+- `PUT /api/students/{id}`: `Admin` ou dono do recurso
+- `DELETE /api/students/{id}`: `Admin`
+- `GET /api/students/{id}/enrollments`: `Admin` ou dono do recurso
+- `POST /api/enrollments`: `Student`, `Admin`
 
+## Status e erros padronizados
+Erros retornam `ProblemDetails` com:
+- `status`
+- `title`
+- `detail`
+- `instance`
+- `traceId`
+- `timestampUtc`
+- `errorCode`
 
-## Rotas de estudantes
-- `POST /students` (Admin): cria perfil vinculado a `UserId` existente no Identity.
-- `GET /students` (Admin): lista estudantes com paginação.
-- `GET /students/{id}` (Admin ou o próprio estudante): detalhes.
-- `PUT /students/{id}` (Admin ou o próprio estudante): atualização de perfil.
-- `DELETE /students/{id}` (Admin): remoção lógica (soft delete).
-- `GET /me` ou `GET /students/me` (autenticado): retorna o perfil do usuário do token.
+Codigos previstos:
+- `400` entrada invalida
+- `401` nao autenticado
+- `403` sem permissao
+- `404` nao encontrado
+- `409` conflito (ex.: duplicidade)
+- `422` violacao de regra de negocio
 
-Regras:
-- `Email` único (conflito retorna HTTP 409).
-- Não-admin não acessa dados de outros estudantes.
-- A validação de propriedade compara `UserId` do recurso com `sub`/`nameidentifier` do token.
+## Paginacao e filtros
+- `page` inicia em `1`.
+- `pageSize` maximo `100`.
+- `GET /api/students/{id}/enrollments`:
+  - filtro `status`: `Active` ou `Cancelled`.
+
+## Regras de validacao relevantes
+- `Course.title`: minimo 3 caracteres.
+- `Student.email`: formato valido e unico.
+- `Enrollment`: nao permite duplicidade (`StudentId + CourseId` com indice unico).
+
+## Arquivo de requests HTTP
+Foi incluido:
+- `aluraProject.Api/aluraProject.Api.http`
+
+Esse arquivo cobre fluxo de login e chamadas protegidas com JWT para testes manuais.

@@ -1,4 +1,4 @@
-﻿using aluraProject.Application.Abstractions;
+using aluraProject.Application.Abstractions;
 using aluraProject.Application.Abstractions.Repositories;
 using aluraProject.Application.Abstractions.Services;
 using aluraProject.Application.Common;
@@ -17,7 +17,7 @@ public sealed class StudentService(
     {
         if (!await identityService.UserExistsAsync(request.UserId, cancellationToken))
         {
-            throw new ValidationException("Provided UserId does not exist in Identity.");
+            throw new BusinessRuleViolationException("Provided UserId does not exist in Identity.");
         }
 
         var existingUser = await studentRepository.GetByUserIdAsync(request.UserId, cancellationToken);
@@ -38,6 +38,10 @@ public sealed class StudentService(
             await studentRepository.AddAsync(student, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return Map(student);
+        }
+        catch (Exception ex) when (IsUniqueStudentViolation(ex))
+        {
+            throw new ConflictException("Student email or user id already exists.");
         }
         catch (ArgumentException ex)
         {
@@ -100,6 +104,10 @@ public sealed class StudentService(
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return Map(student);
         }
+        catch (Exception ex) when (IsUniqueStudentViolation(ex))
+        {
+            throw new ConflictException("Student email already exists.");
+        }
         catch (ArgumentException ex)
         {
             throw new ValidationException(ex.Message);
@@ -136,4 +144,22 @@ public sealed class StudentService(
 
     private static StudentResponse Map(Student student) =>
         new(student.Id, student.UserId, student.FullName, student.Email, student.RegisteredAtUtc, student.UpdatedAtUtc, student.IsDeleted);
+
+    private static bool IsUniqueStudentViolation(Exception exception)
+    {
+        Exception? current = exception;
+        while (current is not null)
+        {
+            if (current.GetType().Name.Contains("SqliteException", StringComparison.OrdinalIgnoreCase)
+                && (current.Message.Contains("Students.Email", StringComparison.OrdinalIgnoreCase)
+                    || current.Message.Contains("Students.UserId", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            current = current.InnerException;
+        }
+
+        return false;
+    }
 }

@@ -1,7 +1,34 @@
-﻿namespace aluraProject.Application.Courses;
+using System.ComponentModel.DataAnnotations;
 
-public sealed record CreateCourseRequest(string Title, string? Description, string Category, int WorkloadHours);
-public sealed record UpdateCourseRequest(string Title, string? Description, string Category, int WorkloadHours);
+namespace aluraProject.Application.Courses;
+
+public sealed record CreateCourseRequest(
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MinLength(3)]
+    [property: MaxLength(200)]
+    string Title,
+    [property: MaxLength(1000)]
+    string? Description,
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MinLength(2)]
+    [property: MaxLength(80)]
+    string Category,
+    [property: Range(1, 2000)]
+    int WorkloadHours);
+
+public sealed record UpdateCourseRequest(
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MinLength(3)]
+    [property: MaxLength(200)]
+    string Title,
+    [property: MaxLength(1000)]
+    string? Description,
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MinLength(2)]
+    [property: MaxLength(80)]
+    string Category,
+    [property: Range(1, 2000)]
+    int WorkloadHours);
 
 public sealed record CourseResponse(
     Guid Id,

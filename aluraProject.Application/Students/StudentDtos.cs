@@ -1,7 +1,29 @@
-﻿namespace aluraProject.Application.Students;
+using System.ComponentModel.DataAnnotations;
 
-public sealed record CreateStudentRequest(string UserId, string FullName, string Email);
-public sealed record UpdateStudentRequest(string FullName, string Email);
+namespace aluraProject.Application.Students;
+
+public sealed record CreateStudentRequest(
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MaxLength(450)]
+    string UserId,
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MinLength(3)]
+    [property: MaxLength(200)]
+    string FullName,
+    [property: Required(AllowEmptyStrings = false)]
+    [property: EmailAddress]
+    [property: MaxLength(256)]
+    string Email);
+
+public sealed record UpdateStudentRequest(
+    [property: Required(AllowEmptyStrings = false)]
+    [property: MinLength(3)]
+    [property: MaxLength(200)]
+    string FullName,
+    [property: Required(AllowEmptyStrings = false)]
+    [property: EmailAddress]
+    [property: MaxLength(256)]
+    string Email);
 
 public sealed record StudentResponse(
     Guid Id,
